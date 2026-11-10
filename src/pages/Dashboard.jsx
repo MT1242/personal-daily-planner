@@ -88,8 +88,8 @@ export default function Dashboard({ tasks, user, actions, onAdd, onNavigate }) {
             <SunIllustration />
             <div className="hero-text">
               <h1>
-                <span>{getGreeting()}, {userName}!</span>
-                <WavingHandIcon size={30} />
+                {getGreeting()}, {userName}!{' '}
+                <span className="inline-wave"><WavingHandIcon size={28} /></span>
               </h1>
               <p>Hãy hoàn thành những công việc quan trọng trong ngày nhé!</p>
             </div>

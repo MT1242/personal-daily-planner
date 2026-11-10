@@ -24,7 +24,6 @@ export default function TaskModal({ task, tasks = [], defaultDate, onSave, onClo
 
   const submit = async (e) => {
     e.preventDefault()
-    // Chặn tuyệt đối bấm spam nhiều lần hoặc giữ phím Enter
     if (submitLockRef.current || saving) return
 
     const cleanTitle = form.title.trim()
@@ -38,7 +37,6 @@ export default function TaskModal({ task, tasks = [], defaultDate, onSave, onClo
       return
     }
 
-    // Kiểm tra trùng lặp công việc trong cùng ngày
     const isDuplicate = tasks.some(
       (t) =>
         t.id !== task?.id &&
@@ -82,69 +80,75 @@ export default function TaskModal({ task, tasks = [], defaultDate, onSave, onClo
             <X size={18} />
           </button>
         </div>
-        <label>
-          Tiêu đề
-          <input
-            autoFocus
-            value={form.title}
-            onChange={set('title')}
-            disabled={saving}
-            maxLength={120}
-            required
-          />
-        </label>
-        <label>
-          Ghi chú
-          <textarea
-            rows={2}
-            value={form.description}
-            onChange={set('description')}
-            disabled={saving}
-            maxLength={500}
-          />
-        </label>
-        <div className="row">
+
+        <div className="modal-body">
           <label>
-            Ngày
-            <input type="date" value={form.date} onChange={set('date')} disabled={saving} required />
+            Tiêu đề
+            <input
+              autoFocus
+              placeholder="Nhập tên công việc…"
+              value={form.title}
+              onChange={set('title')}
+              disabled={saving}
+              maxLength={120}
+              required
+            />
           </label>
           <label>
-            Bắt đầu
-            <input type="time" value={form.startTime} onChange={set('startTime')} disabled={saving} />
+            Ghi chú
+            <textarea
+              rows={2}
+              placeholder="Ghi chú chi tiết (tùy chọn)…"
+              value={form.description}
+              onChange={set('description')}
+              disabled={saving}
+              maxLength={500}
+            />
           </label>
-          <label>
-            Kết thúc
-            <input type="time" value={form.endTime} onChange={set('endTime')} disabled={saving} />
-          </label>
+          <div className="row row-datetime">
+            <label className="field-date">
+              Ngày
+              <input type="date" value={form.date} onChange={set('date')} disabled={saving} required />
+            </label>
+            <label>
+              Bắt đầu
+              <input type="time" value={form.startTime} onChange={set('startTime')} disabled={saving} />
+            </label>
+            <label>
+              Kết thúc
+              <input type="time" value={form.endTime} onChange={set('endTime')} disabled={saving} />
+            </label>
+          </div>
+          {formError && <p className="error" style={{ margin: 0 }}>{formError}</p>}
+          <div className="row row-selects">
+            <label>
+              Ưu tiên
+              <select value={form.priority} onChange={set('priority')} disabled={saving}>
+                {Object.entries(PRIORITIES).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+              </select>
+            </label>
+            <label>
+              Trạng thái
+              <select value={form.status} onChange={set('status')} disabled={saving}>
+                {Object.entries(STATUSES).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+              </select>
+            </label>
+            <label>
+              Danh mục
+              <select value={form.category} onChange={set('category')} disabled={saving}>
+                {Object.entries(CATEGORIES).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+              </select>
+            </label>
+          </div>
         </div>
-        {formError && <p className="error" style={{ margin: 0 }}>{formError}</p>}
-        <div className="row">
-          <label>
-            Ưu tiên
-            <select value={form.priority} onChange={set('priority')} disabled={saving}>
-              {Object.entries(PRIORITIES).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-            </select>
-          </label>
-          <label>
-            Trạng thái
-            <select value={form.status} onChange={set('status')} disabled={saving}>
-              {Object.entries(STATUSES).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-            </select>
-          </label>
-          <label>
-            Danh mục
-            <select value={form.category} onChange={set('category')} disabled={saving}>
-              {Object.entries(CATEGORIES).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-            </select>
-          </label>
-        </div>
+
         <div className="modal-foot">
           <button type="button" className="btn" onClick={onClose} disabled={saving}>
             Hủy
           </button>
           <button type="submit" className="btn primary" disabled={saving}>
             {saving && <span className="spinner-ring xs" />}
-            <span>{saving ? 'Đang lưu…' : 'Lưu'}</span>
+            <span>{saving ? 'Đang lưu…' : 'Lưu công việc'}</span>
           </button>
         </div>
       </form>

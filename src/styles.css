@@ -787,12 +787,14 @@ main {
 .hero-text h1 {
   font-size: 1.65rem;
   color: #ffffff;
-  line-height: 1.25;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
+  line-height: 1.28;
   text-shadow: 0 2px 8px rgba(15, 23, 42, 0.22);
+}
+
+.inline-wave {
+  display: inline-flex;
+  vertical-align: -5px;
+  margin-left: 4px;
 }
 
 .wave-hand-svg {
@@ -1500,10 +1502,19 @@ main {
 .task-meta {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 8px;
   font-size: 0.75rem;
   color: var(--muted);
-  margin-top: 2px;
+  margin-top: 3px;
+}
+
+.meta-time {
+  display: none;
+  align-items: center;
+  gap: 4px;
+  font-weight: 600;
+  color: var(--muted);
 }
 
 .cat-badge {
@@ -1942,16 +1953,24 @@ main {
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
-  padding: 24px;
+  padding: 22px 24px;
   width: 100%;
   max-width: 540px;
   display: flex;
   flex-direction: column;
   gap: 14px;
-  max-height: 92vh;
-  overflow: auto;
+  max-height: 90dvh;
+  overflow: hidden;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
   animation: fadeUp 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow-y: auto;
+  padding-right: 2px;
 }
 
 .modal-head {
@@ -2428,82 +2447,200 @@ main {
   }
 }
 
-/* 4. Mobile Phones (<= 600px) */
-@media (max-width: 600px) {
+.top-add-btn {
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* 4. Mobile Phones (<= 640px) */
+@media (max-width: 640px) {
+  .workspace {
+    padding-bottom: calc(74px + env(safe-area-inset-bottom, 0px));
+  }
+  .mobile-bottom-nav {
+    height: calc(62px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: calc(4px + env(safe-area-inset-bottom, 0px));
+  }
+  .topbar {
+    padding: 10px 12px 4px;
+  }
+  main {
+    padding: 8px 12px 24px;
+  }
+  .page {
+    gap: 12px;
+  }
   .mobile-brand strong {
     display: none;
   }
-  .add-btn-text {
-    font-size: 0.82rem;
-  }
-  .top-add-btn {
-    padding: 7px 12px;
-    min-height: 38px;
-  }
-  .weather-top-city {
+  /* Ẩn thời tiết ở topbar trên điện thoại vì đã có thẻ Thời tiết ngay trong Hero Banner */
+  .weather-top-wrap {
     display: none;
   }
-  .kpi-row, .kpis, .skeleton-kpis {
-    grid-template-columns: 1fr;
+  .top-add-btn {
+    padding: 0 12px;
+    min-height: 38px;
+    font-size: 0.84rem;
+    border-radius: 10px;
+  }
+
+  /* Hero Banner gọn gàng trên mobile */
+  .hero-banner {
+    padding: 16px;
+    min-height: auto;
+    border-radius: 16px;
+  }
+  .hero-content {
     gap: 10px;
+    width: 100%;
   }
   .hero-title-row {
-    align-items: flex-start;
+    align-items: center;
     gap: 12px;
+  }
+  .sun-svg {
+    width: 46px;
+    height: 46px;
+  }
+  .hero-text h1 {
+    font-size: 1.18rem;
+    line-height: 1.3;
+  }
+  .hero-text p {
+    font-size: 0.8rem;
+    line-height: 1.35;
   }
   .hero-badges-row {
     width: 100%;
+    gap: 8px;
+  }
+  .hero-date-pill {
+    padding: 5px 12px;
+    font-size: 0.78rem;
   }
   .hero-weather-card {
     width: 100%;
     justify-content: space-between;
-    border-radius: 14px;
-    padding: 8px 12px;
+    border-radius: 12px;
+    padding: 7px 12px;
   }
-  .row {
+
+  /* 3 Thẻ KPI nằm ngang 3 cột gọn đẹp thay vì xếp chồng chiếm nửa màn hình */
+  .kpi-row, .kpis, .skeleton-kpis {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+  .kpi-box {
     flex-direction: column;
+    align-items: flex-start;
+    padding: 12px 10px;
+    gap: 8px;
+    border-radius: 12px;
+  }
+  .kpi-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+  }
+  .kpi-icon svg {
+    width: 18px;
+    height: 18px;
+  }
+  .kpi-info strong {
+    font-size: 1.3rem;
+  }
+  .kpi-info span {
+    font-size: 0.72rem;
+    line-height: 1.2;
+    display: block;
+  }
+  .kpi-watermark {
+    height: 42px;
+    right: 6px;
+    opacity: 0.65;
+  }
+
+  /* Danh sách công việc gọn gàng trên mobile */
+  .card {
+    padding: 14px;
+    border-radius: 14px;
   }
   .task {
-    flex-wrap: wrap;
-    gap: 8px;
-    padding: 12px 6px;
+    display: grid;
+    grid-template-columns: 24px 1fr auto;
+    align-items: start;
+    gap: 8px 10px;
+    padding: 12px 4px;
   }
   .task-time {
-    min-width: auto;
-    flex-direction: row;
-    gap: 6px;
+    display: none;
+  }
+  .meta-time {
+    display: inline-flex;
+  }
+  .task-check-wrap {
+    margin-top: 2px;
   }
   .task-main {
-    flex: 1 1 60%;
+    grid-column: 2 / 3;
   }
   .task-actions {
+    grid-column: 2 / 4;
+    justify-content: space-between;
     width: 100%;
-    justify-content: flex-end;
-    padding-top: 4px;
+    padding-top: 2px;
   }
   .action-btn {
-    width: 36px;
-    height: 36px;
+    width: 34px;
+    height: 34px;
+    background: var(--surface-alt);
+    border: 1px solid var(--line);
   }
+
+  /* Modal Thêm/Sửa việc gọn trên 1 màn hình, không bị thanh Safari che mất nút Lưu */
   .overlay {
-    padding: 0;
-    align-items: flex-end;
+    padding: 12px;
+    align-items: center;
   }
   .modal {
     max-width: 100%;
-    border-radius: 20px 20px 0 0;
-    max-height: 90vh;
-    padding: 20px 16px;
+    border-radius: 18px;
+    max-height: 84dvh;
+    padding: 16px;
+    gap: 10px;
   }
-  .cal {
-    gap: 4px;
+  .modal-body {
+    gap: 10px;
   }
-  .cal-d {
-    padding: 4px 2px;
+  .modal input, .modal select, .modal textarea {
+    min-height: 38px;
+    padding: 6px 10px;
+    font-size: 0.9rem;
+  }
+  .row-datetime {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .row-datetime .field-date {
+    grid-column: 1 / -1;
+  }
+  .row-selects {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+  .row-selects select {
+    padding: 6px;
     font-size: 0.82rem;
   }
-  .cal.week .cal-d {
-    min-height: 72px;
+  .modal-foot {
+    margin-top: 2px;
+    padding-top: 10px;
+  }
+  .modal-foot .btn {
+    flex: 1;
+    min-height: 42px;
   }
   .login-card-modern {
     padding: 30px 22px 24px;
@@ -2513,14 +2650,10 @@ main {
   }
 }
 
-/* 5. Compact Mobile Phones (<= 400px) */
-@media (max-width: 400px) {
-  .add-btn-text {
-    display: none;
-  }
-  .top-add-btn {
-    width: 38px;
-    padding: 0;
+/* 5. Compact Mobile Phones (<= 380px) */
+@media (max-width: 380px) {
+  .row-selects {
+    grid-template-columns: 1fr;
   }
   .weekly-body {
     flex-direction: column;

@@ -1,8 +1,12 @@
-import { Pencil, Trash2 } from 'lucide-react'
+import { Clock, Pencil, Trash2 } from 'lucide-react'
 import { CATEGORIES, PRIORITIES } from '../utils'
 
 export default function TaskItem({ task, onToggle, onEdit, onDelete, showDate }) {
   const done = task.status === 'completed'
+  const timeLabel = task.startTime
+    ? `${task.startTime}${task.endTime ? ` – ${task.endTime}` : ''}`
+    : 'Cả ngày'
+
   return (
     <div className={`task ${done ? 'done' : ''} ${task.status === 'cancelled' ? 'cancelled' : ''}`}>
       <div className="task-time">
@@ -23,7 +27,11 @@ export default function TaskItem({ task, onToggle, onEdit, onDelete, showDate })
         <strong className="task-title">{task.title}</strong>
         {task.description && <p className="task-desc">{task.description}</p>}
         <div className="task-meta">
-          {task.endTime && task.startTime && <span>{task.startTime} – {task.endTime}</span>}
+          <span className="meta-time">
+            <Clock size={12} />
+            {showDate && `${task.date.split('-').slice(1).reverse().join('/')} · `}
+            {timeLabel}
+          </span>
           {task.category && CATEGORIES[task.category] && (
             <span className="cat-badge">{CATEGORIES[task.category]}</span>
           )}
