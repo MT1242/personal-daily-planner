@@ -167,7 +167,15 @@ function Planner({ user, theme, setTheme }) {
                 />
               )}
               {page === 'statistics' && <Statistics tasks={tasks} />}
-              {page === 'settings' && <Settings user={user} theme={theme} setTheme={setTheme} />}
+              {page === 'settings' && (
+                <Settings
+                  user={user}
+                  theme={theme}
+                  setTheme={setTheme}
+                  tasks={tasks}
+                  onRemove={remove}
+                />
+              )}
             </div>
           )}
         </main>

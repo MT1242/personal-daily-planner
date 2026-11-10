@@ -959,7 +959,7 @@ main {
   position: absolute;
   top: calc(100% + 8px);
   right: 0;
-  width: 248px;
+  width: 284px;
   background: var(--surface);
   color: var(--ink);
   border: 1px solid var(--line);
@@ -1007,7 +1007,7 @@ main {
 .weather-city-item {
   border: 0;
   background: transparent;
-  padding: 6px 8px;
+  padding: 7px 8px;
   border-radius: 8px;
   font-size: 0.78rem;
   font-weight: 500;
@@ -1016,6 +1016,7 @@ main {
   align-items: center;
   gap: 5px;
   text-align: left;
+  white-space: nowrap;
 }
 
 .weather-city-item:hover {
@@ -2493,6 +2494,16 @@ main {
     border-radius: 20px 20px 0 0;
     max-height: 90vh;
     padding: 20px 16px;
+  }
+  .cal {
+    gap: 4px;
+  }
+  .cal-d {
+    padding: 4px 2px;
+    font-size: 0.82rem;
+  }
+  .cal.week .cal-d {
+    min-height: 72px;
   }
   .login-card-modern {
     padding: 30px 22px 24px;

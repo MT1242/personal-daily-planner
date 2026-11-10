@@ -1,14 +1,14 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Droplets, MapPin, Navigation, RefreshCw, Wind } from 'lucide-react'
 
 const CITIES = [
-  { id: 'hcm', name: 'TP. Hồ Chí Minh', lat: 10.8231, lon: 106.6297 },
   { id: 'hn', name: 'Hà Nội', lat: 21.0285, lon: 105.8542 },
+  { id: 'hcm', name: 'TP. Hồ Chí Minh', lat: 10.8231, lon: 106.6297 },
+  { id: 'tn', name: 'Thái Nguyên', lat: 21.5942, lon: 105.8482 },
   { id: 'dn', name: 'Đà Nẵng', lat: 16.0544, lon: 108.2022 },
   { id: 'hp', name: 'Hải Phòng', lat: 20.8449, lon: 106.6881 },
   { id: 'ct', name: 'Cần Thơ', lat: 10.0452, lon: 105.7469 },
   { id: 'hue', name: 'Huế', lat: 16.4637, lon: 107.5909 },
-  { id: 'nt', name: 'Nha Trang', lat: 12.2388, lon: 109.1967 },
   { id: 'dl', name: 'Đà Lạt', lat: 11.9404, lon: 108.4583 },
 ]
 
@@ -21,6 +21,91 @@ function decodeWeather(code, isDay = 1) {
   if ([65, 82].includes(code)) return { label: 'Mưa lớn', type: 'rain' }
   if ([95, 96, 99].includes(code)) return { label: 'Mưa dông', type: 'storm' }
   return { label: 'Thời tiết ổn định', type: 'partly' }
+}
+
+// ==================== SHARED GLOBAL WEATHER STORE ====================
+function getInitialLoc() {
+  try {
+    const saved = localStorage.getItem('planner_weather_loc')
+    return saved ? JSON.parse(saved) : CITIES[0]
+  } catch {
+    return CITIES[0]
+  }
+}
+
+const store = {
+  loc: getInitialLoc(),
+  weather: null,
+  loading: true,
+  listeners: new Set(),
+}
+
+function notifyStore() {
+  const snapshot = {
+    loc: store.loc,
+    weather: store.weather,
+    loading: store.loading,
+  }
+  store.listeners.forEach((fn) => fn(snapshot))
+}
+
+async function fetchSharedWeather(targetLoc = store.loc) {
+  store.loading = true
+  notifyStore()
+  try {
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${targetLoc.lat}&longitude=${targetLoc.lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,is_day&timezone=auto`
+    const res = await fetch(url)
+    const data = await res.json()
+    if (data?.current) {
+      const info = decodeWeather(data.current.weather_code, data.current.is_day)
+      store.weather = {
+        temp: Math.round(data.current.temperature_2m),
+        feelsLike: Math.round(data.current.apparent_temperature),
+        humidity: data.current.relative_humidity_2m,
+        wind: Math.round(data.current.wind_speed_10m),
+        ...info,
+      }
+    }
+  } catch (e) {
+    console.warn('Weather fetch error:', e)
+  } finally {
+    store.loading = false
+    notifyStore()
+  }
+}
+
+function setSharedLocation(nextLoc) {
+  store.loc = nextLoc
+  try {
+    localStorage.setItem('planner_weather_loc', JSON.stringify(nextLoc))
+  } catch {
+    // ignore
+  }
+  fetchSharedWeather(nextLoc)
+}
+
+let initialized = false
+
+function useSharedWeather() {
+  const [state, setState] = useState({
+    loc: store.loc,
+    weather: store.weather,
+    loading: store.loading,
+  })
+
+  useEffect(() => {
+    store.listeners.add(setState)
+    if (!initialized) {
+      initialized = true
+      fetchSharedWeather(store.loc)
+      setInterval(() => fetchSharedWeather(store.loc), 15 * 60 * 1000)
+    }
+    return () => {
+      store.listeners.delete(setState)
+    }
+  }, [])
+
+  return state
 }
 
 export function WeatherSvgIcon({ type = 'partly', size = 34 }) {
@@ -87,7 +172,6 @@ export function WeatherSvgIcon({ type = 'partly', size = 34 }) {
     )
   }
 
-  // partly or cloudy
   return (
     <svg width={size} height={size} viewBox="0 0 48 48" fill="none" aria-hidden="true">
       <circle cx="19" cy="18" r="9" fill="#FACC15" />
@@ -106,56 +190,31 @@ export function WeatherSvgIcon({ type = 'partly', size = 34 }) {
 }
 
 export default function WeatherWidget({ variant = 'hero' }) {
-  const [loc, setLoc] = useState(() => {
-    try {
-      const saved = localStorage.getItem('planner_weather_loc')
-      return saved ? JSON.parse(saved) : CITIES[0]
-    } catch {
-      return CITIES[0]
-    }
-  })
-  const [weather, setWeather] = useState(null)
-  const [loading, setLoading] = useState(true)
+  const { loc, weather, loading } = useSharedWeather()
   const [openMenu, setOpenMenu] = useState(false)
+  const wrapRef = useRef(null)
 
-  const fetchWeather = async (targetLoc = loc) => {
-    setLoading(true)
-    try {
-      const url = `https://api.open-meteo.com/v1/forecast?latitude=${targetLoc.lat}&longitude=${targetLoc.lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,is_day&timezone=auto`
-      const res = await fetch(url)
-      const data = await res.json()
-      if (data?.current) {
-        const info = decodeWeather(data.current.weather_code, data.current.is_day)
-        setWeather({
-          temp: Math.round(data.current.temperature_2m),
-          feelsLike: Math.round(data.current.apparent_temperature),
-          humidity: data.current.relative_humidity_2m,
-          wind: Math.round(data.current.wind_speed_10m),
-          ...info,
-        })
-      }
-    } catch (e) {
-      console.warn('Weather fetch error:', e)
-    } finally {
-      setLoading(false)
-    }
-  }
-
+  // Tự động đóng menu khi click ra ngoài
   useEffect(() => {
-    fetchWeather(loc)
-    const id = setInterval(() => fetchWeather(loc), 15 * 60 * 1000)
-    return () => clearInterval(id)
-  }, [loc.lat, loc.lon])
+    if (!openMenu) return
+    const onDocClick = (e) => {
+      if (wrapRef.current && !wrapRef.current.contains(e.target)) {
+        setOpenMenu(false)
+      }
+    }
+    document.addEventListener('mousedown', onDocClick)
+    return () => document.removeEventListener('mousedown', onDocClick)
+  }, [openMenu])
 
   const selectCity = (city) => {
-    setLoc(city)
-    localStorage.setItem('planner_weather_loc', JSON.stringify(city))
+    setSharedLocation(city)
     setOpenMenu(false)
   }
 
   const detectGps = () => {
     if (!navigator.geolocation) return
-    setLoading(true)
+    store.loading = true
+    notifyStore()
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
         const lat = Number(pos.coords.latitude.toFixed(4))
@@ -166,15 +225,17 @@ export default function WeatherWidget({ variant = 'hero' }) {
             `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=vi`
           )
           const g = await r.json()
-          name = g.city || g.locality || g.principalSubdivision || 'Vị trí của bạn'
+          name = (g.city || g.locality || g.principalSubdivision || 'Vị trí của bạn')
+            .replace(/^Tỉnh\s+/i, '')
+            .replace(/^Thành phố\s+/i, '')
         } catch {
           // fallback name
         }
-        const customLoc = { id: 'gps', name, lat, lon }
-        selectCity(customLoc)
+        selectCity({ id: 'gps', name, lat, lon })
       },
       () => {
-        setLoading(false)
+        store.loading = false
+        notifyStore()
         setOpenMenu(false)
       },
       { timeout: 6000 }
@@ -183,7 +244,7 @@ export default function WeatherWidget({ variant = 'hero' }) {
 
   if (variant === 'topbar') {
     return (
-      <div className="weather-top-wrap">
+      <div className="weather-top-wrap" ref={wrapRef}>
         <button
           type="button"
           className="weather-top-pill"
@@ -198,14 +259,14 @@ export default function WeatherWidget({ variant = 'hero' }) {
         {openMenu && (
           <div className="weather-dropdown fade-in">
             <div className="weather-dropdown-head">
-              <strong>Chọn khu vực thời tiết</strong>
+              <strong>Khu vực thời tiết</strong>
               <button
                 type="button"
                 className="weather-gps-btn"
                 onClick={detectGps}
               >
                 <Navigation size={13} />
-                <span>Vị trí hiện tại</span>
+                <span>Định vị GPS</span>
               </button>
             </div>
             <div className="weather-city-list">
@@ -228,7 +289,7 @@ export default function WeatherWidget({ variant = 'hero' }) {
   }
 
   return (
-    <div className="hero-weather-card">
+    <div className="hero-weather-card" ref={wrapRef}>
       <div className="hero-weather-main">
         <WeatherSvgIcon type={weather?.type || 'partly'} size={42} />
         <div className="hero-weather-temp">
@@ -255,7 +316,7 @@ export default function WeatherWidget({ variant = 'hero' }) {
             <button
               type="button"
               className="weather-refresh-btn"
-              onClick={() => fetchWeather(loc)}
+              onClick={() => fetchSharedWeather(loc)}
               title="Cập nhật thời tiết"
               aria-label="Cập nhật thời tiết"
             >
@@ -292,4 +353,3 @@ export default function WeatherWidget({ variant = 'hero' }) {
     </div>
   )
 }
-
