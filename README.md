@@ -7,7 +7,7 @@
 ![Firebase](https://img.shields.io/badge/Firebase-10.14-FFCA28?logo=firebase&logoColor=black)
 ![GitHub Pages](https://img.shields.io/badge/Deploy-GitHub%20Pages-222222?logo=github)
 
-🔗 **Trải nghiệm trực tiếp (Live Demo):** [https://mt1242.github.io/personal-daily-planner/](https://mt1242.github.io/personal-daily-planner/)
+🔗 **Trải nghiệm trực tiếp (Live Demo):** [https://mt1242.github.io/personal-daily-planner/](https://Char-La-Lotte.github.io/personal-daily-planner/)
 
 ---
 
